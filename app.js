@@ -174,26 +174,42 @@ if(jumpBtn) {
 window.addEventListener('keydown', (e) => { if (e.code === 'Space') startJump(e); });
 
 // ສ້າງສາກ ແລະ ຫຼຽນ 15 ອັນ
-let platforms = [
-    { x: 100, y: 150, w: 200, h: 25 },
-    { x: window.innerWidth - 300, y: 220, w: 180, h: 25 },
-    { x: window.innerWidth / 2 - 100, y: window.innerHeight / 2 - 50, w: 200, h: 25 },
-    { x: 150, y: window.innerHeight - 200, w: 220, h: 25 },
-    { x: window.innerWidth - 350, y: window.innerHeight - 150, w: 200, h: 25 }
-];
-// 🗺️ ເພີ່ມຜັງຊັ້ນຫີນສຳຫຼັບດ່ານ2
-const level2Platforms = [
-    { x: 100, y: 180, w: 220, h: 25 },
-    { x: 400, y: 280, w: 180, h: 25 },
-    { x: 200, y: 420, w: 250, h: 25 },
-    { x: window.innerWidth - 300, y: 200, w: 200, h: 25 }
-];
-const hazards = [
-    { x: 200, y: 145 },
-    { x: window.innerWidth / 2, y: window.innerHeight / 2 - 55 },
-    { x: window.innerWidth - 250, y: 200 }
-];
+function generateLayout(level = 1) {
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
+    if (level === 1) {
+        platforms = [
+            { x: w * 0.08, y: h * 0.25, w: 180, h: 25 },
+            { x: w * 0.65, y: h * 0.30, w: 180, h: 25 },
+            { x: w * 0.38, y: h * 0.50, w: 200, h: 25 },
+            { x: w * 0.10, y: h * 0.75, w: 220, h: 25 },
+            { x: w * 0.60, y: h * 0.75, w: 200, h: 25 }
+        ];
+        hazards = [
+            { x: w * 0.20, y: h * 0.23 },
+            { x: w * 0.48, y: h * 0.45 },
+            { x: w * 0.75, y: h * 0.25 }
+        ];
+    } else if (level === 2) {
+        platforms = [
+            { x: w * 0.10, y: h * 0.28, w: 220, h: 25 },
+            { x: w * 0.42, y: h * 0.38, w: 180, h: 25 },
+            { x: w * 0.20, y: h * 0.60, w: 250, h: 25 },
+            { x: w * 0.65, y: h * 0.30, w: 200, h: 25 }
+        ];
+        hazards = [
+            { x: w * 0.20, y: h * 0.23 },
+            { x: w * 0.48, y: h * 0.45 },
+            { x: w * 0.75, y: h * 0.25 },
+            { x: w * 0.33, y: h * 0.33 },
+            { x: w * 0.70, y: h * 0.65 }
+        ];
+    }
+}
+
+let platforms = [];
+let hazards = [];
 let coins = [];
 for (let i = 0; i < 15; i++) {
     coins.push({
@@ -358,6 +374,14 @@ actionBtn.addEventListener('click', () => {
     if (!gameStarted && !gameOver && !winGame) {
         gameStarted = true;
         menuScreen.style.display = 'none';
+
+        maxX = window.innerWidth - 50;
+        maxY = window.innerHeight - 50;
+        playerX = window.innerWidth / 2;
+        playerY = window.innerHeight / 2;
+
+        generateLayout(1);
+
         coins.forEach(c => {
             c.x = Math.random() * (window.innerWidth - 100) + 50;
             c.y = Math.random() * (window.innerHeight - 150) + 50;
@@ -370,6 +394,7 @@ actionBtn.addEventListener('click', () => {
             sp.x = Math.random() * (window.innerWidth - 100) + 50;
             sp.y = Math.random() * (window.innerHeight - 150) + 50;
         });
+
         initMap();
         startTimer();
         requestAnimationFrame(gameLoop);
@@ -600,7 +625,7 @@ if (!checkPlatformCollision(playerX, nextY)) playerY = nextY;
                                 collected: false
                             });
                         }
-                        platforms = level2Platforms;
+                        generateLayout(2);
                         gameStarted = true;
                         initMap(); 
                         requestAnimationFrame(gameLoop); 
