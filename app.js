@@ -1,4 +1,4 @@
-// 🔊 
+// 🔊 ສຽງປະກອບ
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
 function playSound(type) {
@@ -29,12 +29,14 @@ function playSound(type) {
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
         osc.start(); osc.stop(audioCtx.currentTime + 0.2);
     } else if (type === 'shield') {
+        // ສຽງໂລ່ປ້ອງກັນ (ສຽງຕ່ຳຂຶ້ນຫາສຽງສູງ)
         osc.type = 'sine';
         osc.frequency.setValueAtTime(300, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.25);
         gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.25);
         osc.start(); osc.stop(audioCtx.currentTime + 0.25);
     } else if (type === 'speed') {
+        // ສຽງ Speed ຄວາມໄວ (ສຽງແຫຼມ)
         osc.type = 'triangle';
         osc.frequency.setValueAtTime(400, audioCtx.currentTime);
         osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.15);
@@ -42,8 +44,7 @@ function playSound(type) {
         osc.start(); osc.stop(audioCtx.currentTime + 0.15);
     }
 }
-
-// ✨ ข้อความลอย +10
+// ✨ ຂໍ້ຄວາມລອຍ +10
 function showFloatingText(x, y, text, color = '#f1c40f') {
     const el = document.createElement('div');
     el.innerText = text;
@@ -83,14 +84,11 @@ let bullets = [];
 shieldsContainer.id = 'shields';
 document.body.appendChild(shieldsContainer);
 
-// 📐 ดึงขนาดแนวนอนจริง
-let screenW = Math.max(window.innerWidth, window.innerHeight);
-let screenH = Math.min(window.innerWidth, window.innerHeight);
-let maxX = screenW - 50; 
-let maxY = screenH - 50;
+let maxX = window.innerWidth - 50; 
+let maxY = window.innerHeight - 50;
 
-let playerX = screenW / 2;
-let playerY = screenH / 2;
+let playerX = window.innerWidth / 2;
+let playerY = window.innerHeight / 2;
 let playerSpeed = 4;
 let playerAngle = 0; 
 
@@ -102,26 +100,27 @@ let playerHp = 100;
 let lives = 3; 
 let score = 0;
 let highScore = localStorage.getItem('highScore') || 0;
-let currentLevel = 1;
-let timeLeft = 120;
-let timerInterval = null;
+let currentLevel = 1; // ເລີ່ມຕົ້ນດ່ານທີ1
+let timeLeft = 120; // ກຳນົດເວລາ120
+let timerInterval = null; // ເກັບສະຖານະການນັບເວລາ
 let gameStarted = false;
 let gameOver = false;
 let winGame = false;
+let dashCooldown = false;
 
-// 🛡️ ระบบโล่
+// 🛡️ ລະບົບໂລ່ປ້ອງກັນ
 let hasShield = false;
 let shieldTimer = null;
 let shields = [];
 let shieldElements = [];
 
-// ⚡ ระบบความเร็ว
+// ⚡ ລະບົບຄວາມໄວ(Speed Boost)
 let hasSpeedBoost = false;
 let speedTimer = null;
 let speeds = [];
 let speedElements = [];
 
-// ระบบกระโดด
+// ລະບົບກະໂດດ
 let isJumping = false;
 let jumpFrame = 0;
 const totalJumpFrames = 25; 
@@ -134,12 +133,13 @@ function startJump(e) {
     jumpFrame = 0;
     jumpAngle = playerAngle;
 }
-
 function shoot() {
     playSound('shoot');
     if (gameOver || !gameStarted || isJumping) return;
     
     let angle = playerAngle; 
+
+    //  🎯 ຖເາຜີຍັງບໍ່ຕາຍໃຫ້ຄຳນວນເລ່ງຍິງໄປຫາຜີອັດຕະໂນມັດ
     if (!isGhostDead) {
         let dx = ghostX - playerX;
         let dy = ghostY - playerY;
@@ -155,11 +155,12 @@ function shoot() {
         angle: angle
     });
 }
-
+//  ກົດປຸ່ມ F ຫຼື J ເພື່ອຍິງ
 window.addEventListener('keydown', (e) => {
     if (e.code === 'KeyF' || e.code === 'KeyJ') shoot();
 });
 
+// ກົດປຸ່ມຍິງເທິງຫໜ້າຈໍມືຖື
 const fireBtn = document.getElementById('fire');
 if (fireBtn) {
     fireBtn.addEventListener('click', shoot);
@@ -172,17 +173,10 @@ if(jumpBtn) {
 }
 window.addEventListener('keydown', (e) => { if (e.code === 'Space') startJump(e); });
 
-let platforms = [];
-let hazards = [];
-let coins = [];
-
+// ສ້າງສາກ ແລະ ຫຼຽນ 15 ອັນ
 function generateLayout(level = 1) {
-    screenW = Math.max(window.innerWidth, window.innerHeight);
-    screenH = Math.min(window.innerWidth, window.innerHeight);
-    maxX = screenW - 50;
-    maxY = screenH - 50;
-    const w = screenW;
-    const h = screenH;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
     if (level === 1) {
         platforms = [
@@ -214,33 +208,34 @@ function generateLayout(level = 1) {
     }
 }
 
-function respawnItems() {
-    coins = [];
-    shields = [];
-    speeds = [];
-    for (let i = 0; i < 15; i++) {
-        coins.push({
-            x: Math.random() * (screenW - 120) + 60,
-            y: Math.random() * (screenH - 160) + 60,
-            collected: false
-        });
-    }
-    for (let i = 0; i < 3; i++) {
-        shields.push({
-            x: Math.random() * (screenW - 120) + 60,
-            y: Math.random() * (screenH - 160) + 60,
-            collected: false
-        });
-    }
-    for (let i = 0; i < 3; i++) {
-        speeds.push({
-            x: Math.random() * (screenW - 120) + 60,
-            y: Math.random() * (screenH - 160) + 60,
-            collected: false
-        });
-    }
+let platforms = [];
+let hazards = [];
+let coins = [];
+for (let i = 0; i < 15; i++) {
+    coins.push({
+        x: Math.random() * (window.innerWidth - 100) + 50,
+        y: Math.random() * (window.innerHeight - 150) + 50,
+        collected: false
+    });
 }
 
+// 🛡️ ສ້າງໄອເທັມໂລ່ປ້ອງກັນ3ອັນ
+for (let i = 0; i < 3; i++) {
+    shields.push({
+        x: Math.random() * (window.innerWidth - 100) + 50,
+        y: Math.random() * (window.innerHeight - 150) + 50,
+        collected: false
+    });
+}
+
+// ⚡ສ້າງໄອເທັມຄວາມໄວ3ອັນ
+for (let i = 0; i < 3; i++) {
+    speeds.push({
+        x: Math.random() * (window.innerWidth - 100) + 50,
+        y: Math.random() * (window.innerHeight - 150) + 50,
+        collected: false
+    });
+}
 function initShields() {
     shieldsContainer.innerHTML = '';
     shieldElements = [];
@@ -284,7 +279,7 @@ function initSpeeds() {
         div.style.top = speedData.y + 'px';
         div.style.width = '26px';
         div.style.height = '26px';
-        div.style.backgroundColor = '#f1c40f';
+        div.style.backgroundColor = '#f1c40f'; // สีเหลืองทอง
         div.style.borderRadius = '50%';
         div.style.display = 'flex';
         div.style.alignItems = 'center';
@@ -293,11 +288,12 @@ function initSpeeds() {
         div.style.fontWeight = 'bold';
         div.style.fontSize = '14px';
         div.style.boxShadow = '0 0 10px rgba(241, 196, 15, 0.8)';
-        div.innerText = '⚡';
+        div.innerText = '⚡'; // ไอคอนสายฟ้า
         speedsContainer.appendChild(div);
         speedElements.push(div);
     });
 }
+
 
 function initMap() {
     platformsContainer.innerHTML = '';
@@ -326,10 +322,11 @@ function initMap() {
         coinsContainer.appendChild(div);
     });
 
-    initShields(); 
-    initSpeeds();  
+    initShields(); // 🛡️ 
+    initSpeeds();  // ⚡ 
 }
 
+// ຟັງຊັ່ນອັບເດດຫົວໃຈ
 function updateLivesDisplay() {
     const heartsDisplay = document.getElementById('hearts-display');
     if (heartsDisplay) {
@@ -357,11 +354,9 @@ function startTimer() {
         }
     }, 1000);
 }
-
-generateLayout(1);
-respawnItems();
 initMap();
 
+// ໜ້າຈໍ Start / Game Over / Victory
 const uiOverlay = document.createElement('div');
 uiOverlay.innerHTML = `
     <div id="menu-screen" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.9); z-index:99; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white; font-family:Arial; text-align:center;">
@@ -380,11 +375,25 @@ actionBtn.addEventListener('click', () => {
         gameStarted = true;
         menuScreen.style.display = 'none';
 
-        generateLayout(1);
-        respawnItems();
+        maxX = window.innerWidth - 50;
+        maxY = window.innerHeight - 50;
+        playerX = window.innerWidth / 2;
+        playerY = window.innerHeight / 2;
 
-        playerX = screenW / 2;
-        playerY = screenH / 2;
+        generateLayout(1);
+
+        coins.forEach(c => {
+            c.x = Math.random() * (window.innerWidth - 100) + 50;
+            c.y = Math.random() * (window.innerHeight - 150) + 50;
+        });
+        shields.forEach(s => {
+            s.x = Math.random() * (window.innerWidth - 100) + 50;
+            s.y = Math.random() * (window.innerHeight - 150) + 50;
+        });
+        speeds.forEach(sp => {
+            sp.x = Math.random() * (window.innerWidth - 100) + 50;
+            sp.y = Math.random() * (window.innerHeight - 150) + 50;
+        });
 
         initMap();
         startTimer();
@@ -421,6 +430,7 @@ function setupBtn(id, key) {
 setupBtn('up', 'up'); setupBtn('down', 'down');
 setupBtn('left', 'left'); setupBtn('right', 'right');
 
+// ຟັງຊັ່ນການກວດການຕຳPlatform (Collision Detection)
 function checkPlatformCollision(newX, newY, width = 45, height = 45) {
     return platforms.some(p => {
         return newX < p.x + p.w &&
@@ -430,14 +440,11 @@ function checkPlatformCollision(newX, newY, width = 45, height = 45) {
     });
 }
 
+// ພັງຊັ່ນລູບເກມ
 function gameLoop() {
     if (!gameStarted || gameOver || winGame) return;
-    
-    screenW = Math.max(window.innerWidth, window.innerHeight);
-    screenH = Math.min(window.innerWidth, window.innerHeight);
-    maxX = screenW - 50;
-    maxY = screenH - 50;
-
+    maxX = window.innerWidth - 50;
+    maxY = window.innerHeight - 50;
     if (isJumping) {
         jumpFrame++;
         let progress = jumpFrame / totalJumpFrames;
@@ -447,8 +454,10 @@ function gameLoop() {
         playerX += Math.cos(jumpAngle * Math.PI / 180) * 5.5;
         playerY += Math.sin(jumpAngle * Math.PI / 180) * 5.5;
 
-        playerX = Math.max(0, Math.min(playerX, maxX));
-        playerY = Math.max(0, Math.min(playerY, maxY));
+        if (playerX < 0) playerX = 0;
+        if (playerX > maxX) playerX = maxX;
+        if (playerY < 0) playerY = 0;
+        if (playerY > maxY) playerY = maxY;
 
         player.style.left = playerX + 'px';
         player.style.top = (playerY - jumpHeight) + 'px';
@@ -478,12 +487,10 @@ function gameLoop() {
         if (keys.left && playerX > 0) { nextX -= currentSpeed; moveX = -1; }
         if (keys.right && playerX < maxX) { nextX += currentSpeed; moveX = 1; }
 
-        if (!checkPlatformCollision(nextX, playerY)) playerX = nextX;
-        if (!checkPlatformCollision(playerX, nextY)) playerY = nextY;
+// ການຕຳ
+if (!checkPlatformCollision(nextX, playerY)) playerX = nextX;
+if (!checkPlatformCollision(playerX, nextY)) playerY = nextY;
         
-        playerX = Math.max(0, Math.min(playerX, maxX));
-        playerY = Math.max(0, Math.min(playerY, maxY));
-
         if (moveX !== 0 || moveY !== 0) {
             playerAngle = Math.atan2(moveY, moveX) * (180 / Math.PI);
         }
@@ -492,6 +499,8 @@ function gameLoop() {
         player.style.top = playerY + 'px';
         player.style.transform = `rotate(${playerAngle}deg)`;
     }
+
+    // AI ຊອມບີ້
 
     let dx = playerX - ghostX;
     let dy = playerY - ghostY;
@@ -506,6 +515,7 @@ function gameLoop() {
     ghost.style.left = ghostX + 'px';
     ghost.style.top = ghostY + 'px';
 
+   // 🛡️ ໂລ່ປົກປ້ອງ (Shield)
     shields.forEach((shield, i) => {
         if (!shield.collected && Math.sqrt((playerX - shield.x)**2 + (playerY - shield.y)**2) < 35) {
             shield.collected = true;
@@ -514,6 +524,7 @@ function gameLoop() {
             const shieldEl = document.getElementById('shield-' + i);
             if (shieldEl) shieldEl.style.display = 'none';
 
+            // ตั้งเวลาให้โล่หมดอายุใน 5 วินาที
             clearTimeout(shieldTimer);
             shieldTimer = setTimeout(() => {
                 hasShield = false;
@@ -521,6 +532,7 @@ function gameLoop() {
         }
     });
 
+    // ⚡ ຄວາມໄວ
     speeds.forEach((speed, i) => {
         if (!speed.collected && Math.sqrt((playerX - speed.x)**2 + (playerY - speed.y)**2) < 35) {
             speed.collected = true;
@@ -529,13 +541,16 @@ function gameLoop() {
             const speedEl = document.getElementById('speed-' + i);
             if (speedEl) speedEl.style.display = 'none';
 
+            // ຕັ້ງເວລາໃຫ້ຄວາມໄວໝົດອາຍຸພາຍໃນ5ວິນາທີ
             clearTimeout(speedTimer);
             speedTimer = setTimeout(() => {
-                hasSpeedBoost = false;    
+            hasSpeedBoost = false;    
             }, 5000);
         }
     });
+  
 
+    // ເກັບຫຼຽນ ແລະ ລະບົບຊະນະ
     coins.forEach((c, i) => {
         if (!c.collected && Math.sqrt((playerX - c.x)**2 + (playerY - c.y)**2) < 35) {
             c.collected = true;
@@ -555,6 +570,7 @@ function gameLoop() {
                 if (currentLevel === 1) {
                     currentLevel = 2;
                     score = 0;
+                    
                     gameStarted = false; 
                     
                     menuScreen.style.display = 'flex';
@@ -576,11 +592,40 @@ function gameLoop() {
                         updateLivesDisplay(); 
 
                         ghostSpeed = 2.8; 
-                        ghostX = screenW - 100; 
-                        ghostY = screenH - 100; 
+                        ghostX = window.innerWidth - 100; 
+                        ghostY = window.innerHeight - 100; 
 
+                        hazards.push({ x: window.innerWidth / 3, y: window.innerHeight / 3 });
+                        hazards.push({ x: window.innerWidth - 200, y: window.innerHeight - 250 });
+                        
+                        coins = [];
+                        for (let i = 0; i < 15; i++) {
+                            coins.push({
+                                x: Math.random() * (window.innerWidth - 100) + 50,
+                                y: Math.random() * (window.innerHeight - 150) + 50,
+                                collected: false
+                            });
+                        }
+
+                        // 🛡️ ເກີດໂລ່ໃໝ່ໃນດ່ານ2
+                        shields = [];
+                        for (let i = 0; i < 3; i++) {
+                            shields.push({
+                                x: Math.random() * (window.innerWidth - 100) + 50,
+                                y: Math.random() * (window.innerHeight - 150) + 50,
+                                collected: false
+                            });
+                        }
+                        // ⚡  item speed 2
+                        speeds = [];
+                        for (let i = 0; i < 3; i++) {
+                            speeds.push({
+                                x: Math.random() * (window.innerWidth - 100) + 50,
+                                y: Math.random() * (window.innerHeight - 150) + 50,
+                                collected: false
+                            });
+                        }
                         generateLayout(2);
-                        respawnItems();
                         gameStarted = true;
                         initMap(); 
                         requestAnimationFrame(gameLoop); 
@@ -599,8 +644,10 @@ function gameLoop() {
         }
     });
 
+    // ລະບົບພະລັງຊີວິດ ຫົວໃຈ ລະບົບປ້ອງກັນຜີ
     if (!isGhostDead && distance < 35) {
         if (hasShield) {
+            // 🛡️ ຖ້າມີໂລ່ຜີຊົນບໍ່ເປັນຫຍັງ
             ghostX += (playerX - ghostX) * 0.1;
             ghostY += (playerY - ghostY) * 0.1;
         } else {
@@ -612,8 +659,8 @@ function gameLoop() {
                 
                 if (lives > 0) {
                     playerHp = 100;   
-                    playerX = screenW / 2; 
-                    playerY = screenH / 2;
+                    playerX = window.innerWidth / 2; 
+                    playerY = window.innerHeight / 2;
                     ghostX = 20; 
                     ghostY = 20;     
                 } else {
@@ -630,15 +677,16 @@ function gameLoop() {
             }
         }
     }
-
+    // ການເຄື່ອນທີ່ຂອງລູກປືນ🔫
     if (bulletsContainer) bulletsContainer.innerHTML = '';
     for (let i = bullets.length - 1; i >= 0; i--) {
         let b = bullets[i];
         b.x += b.vx;
         b.y += b.vy;
 
+        // ລູກປືນຍິງ Ghost
         if (!isGhostDead && Math.sqrt((b.x - ghostX)**2 + (b.y - ghostY)**2) < 30) {
-            ghostHp -= 25;
+            ghostHp -= 25; // ยิง 4 นัดผีตาย (-25 HP)
             playSound('hit');
             if (ghostHpText) ghostHpText.innerText = Math.max(0, ghostHp);
             bullets.splice(i, 1);
@@ -655,12 +703,13 @@ function gameLoop() {
                     ghostX = 20;
                     ghostY = 20;
                     ghost.style.display = 'block';
-                }, 5000);
+                }, 5000); // ເກີດໃໝ່ໃນ 5 ວິນາທີ
             }
             continue;
         }
 
-        if (b.x < 0 || b.x > screenW || b.y < 0 || b.y > screenH) {
+        // กระสุนหลุดนอกจอ
+        if (b.x < 0 || b.x > window.innerWidth || b.y < 0 || b.y > window.innerHeight) {
             bullets.splice(i, 1);
             continue;
         }
