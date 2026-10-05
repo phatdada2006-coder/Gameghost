@@ -4,7 +4,11 @@ const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playSound(type) {
     if (audioCtx.state === 'suspended') {
         audioCtx.resume();
+        if (screen.orientation && screen.orientation.lock) {
+             screen.orientation.lock('landscape').catch(err => console.log(err));
+        }
     }
+    
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.connect(gain);
@@ -354,6 +358,19 @@ actionBtn.addEventListener('click', () => {
     if (!gameStarted && !gameOver && !winGame) {
         gameStarted = true;
         menuScreen.style.display = 'none';
+        coins.forEach(c => {
+            c.x = Math.random() * (window.innerWidth - 100) + 50;
+            c.y = Math.random() * (window.innerHeight - 150) + 50;
+        });
+        shields.forEach(s => {
+            s.x = Math.random() * (window.innerWidth - 100) + 50;
+            s.y = Math.random() * (window.innerHeight - 150) + 50;
+        });
+        speeds.forEach(sp => {
+            sp.x = Math.random() * (window.innerWidth - 100) + 50;
+            sp.y = Math.random() * (window.innerHeight - 150) + 50;
+        });
+        initMap();
         startTimer();
         requestAnimationFrame(gameLoop);
     } else {
@@ -401,7 +418,8 @@ function checkPlatformCollision(newX, newY, width = 45, height = 45) {
 // ພັງຊັ່ນລູບເກມ
 function gameLoop() {
     if (!gameStarted || gameOver || winGame) return;
-
+    maxX = window.innerWidth - 50;
+    maxY = window.innerHeight - 50;
     if (isJumping) {
         jumpFrame++;
         let progress = jumpFrame / totalJumpFrames;
