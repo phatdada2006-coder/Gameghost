@@ -1,0 +1,176 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000;
+    overflow: hidden;
+    touch-action: none;
+}
+
+#game {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+    background: radial-gradient(circle at 50% 50%, #1f281d, #050505 90%);
+    overflow: hidden;
+}
+
+#fog {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(20, 20, 20, 0.2) 0%, rgba(0,0,0,0.85) 100%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* UI ສະແດງຜົນ */
+#ui {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-family: Arial, sans-serif;
+    color: #fff;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px #000;
+}
+
+#score-board {
+    font-size: 20px;
+    color: #f1c40f;
+}
+
+#hp-container {
+    width: 160px;
+    height: 16px;
+    background-color: rgba(0, 0, 0, 0.6);
+    border: 2px solid #fff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#hp-bar {
+    width: 100%;
+    height: 100%;
+    background-color: #2ecc71;
+    transition: width 0.1s ease;
+}
+
+/* ຫີນອຸປະສັກ */
+.platform {
+    position: absolute;
+    background: #2c3e50;
+    border: 2px solid #2ecc71;
+    border-radius: 8px;
+    z-index: 3;
+    box-shadow: 0 0 10px rgba(0,0,0,0.7);
+}
+
+/* ໜາມອຸປະສັກ */
+.hazard {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="%23e74c3c"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 3;
+}
+
+/* ຫຼຽນ */
+.coin {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    background-color: #f1c40f;
+    border-radius: 50%;
+    border: 3px solid #f39c12;
+    z-index: 4;
+    box-shadow: 0 0 10px #f1c40f;
+}
+
+/* ---------------------------------------------------- */
+#player {
+    position: absolute;
+    width: 55px;
+    height: 55px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="38" cy="50" rx="16" ry="28" fill="%2334495e"/><circle cx="38" cy="50" r="14" fill="%23d1a374"/><circle cx="36" cy="50" r="13" fill="%231b2631"/><path d="M 38 24 L 68 42 L 64 47 L 38 32 Z" fill="%23d1a374"/><path d="M 38 76 L 68 58 L 64 53 L 38 68 Z" fill="%23d1a374"/><rect x="58" y="44" width="32" height="12" rx="3" fill="%23111111"/><rect x="88" y="47" width="5" height="6" fill="%23f1c40f"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 5;
+    filter: drop-shadow(0 0 6px rgba(52, 152, 219, 0.6));
+}
+
+#ghost {
+    position: absolute;
+    width: 60px;
+    height: 60px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><ellipse cx="38" cy="50" rx="16" ry="30" fill="%232d3436"/><circle cx="38" cy="50" r="15" fill="%2344bd32"/><path d="M 38 24 C 55 18, 65 20, 82 25 L 80 32 C 65 28, 55 28, 38 32 Z" fill="%2344bd32"/><path d="M 38 76 C 55 82, 65 80, 82 75 L 80 68 C 65 72, 55 72, 38 68 Z" fill="%2344bd32"/><path d="M 82 25 L 88 22 M 82 25 L 89 26 M 82 25 L 87 30" stroke="%23e74c3c" stroke-width="2.5"/><path d="M 82 75 L 88 72 M 82 75 L 89 76 M 82 75 L 87 80" stroke="%23e74c3c" stroke-width="2.5"/><circle cx="48" cy="43" r="4" fill="%23e74c3c"/><circle cx="48" cy="57" r="4" fill="%23e74c3c"/></svg>');
+    background-size: contain;
+    background-repeat: no-repeat;
+    z-index: 5;
+    filter: drop-shadow(0 0 8px rgba(231, 76, 60, 0.7));
+}
+
+
+#controls {
+    position: absolute;
+    bottom: 30px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 10;
+}
+
+#direction button {
+    width: 65px;
+    height: 60px;
+    font-size: 30px;
+    margin: 2px;
+    border-radius: 12px;
+    border: 2px solid #555;
+    background: rgba(30, 30, 30, 0.8);
+    color: white;
+}
+
+#direction button:active {
+    background: rgba(180, 0, 0, 0.9);
+    transform: scale(0.9);
+}
+
+#jump {
+    margin-left: 20px;
+    background: rgba(80, 80, 80, 0.9);
+}
+/* ປຸ່ມຍິງປືນ */
+#fire {
+    margin-left: 10px;
+    background: rgba(231, 76, 60, 0.8) !important;
+}
+
+#fire:active {
+    background: rgba(192, 57, 43, 0.9) !important;
+    transform: scale(0.9);
+}
+
+/* ລູກປືນ */
+.bullet {
+    position: absolute;
+    width: 12px;
+    height: 6px;
+    background-color: #f1c40f;
+    border-radius: 3px;
+    z-index: 6;
+    box-shadow: 0 0 8px #f39c12;
+}

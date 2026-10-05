@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Survival Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game">
+        <div id="fog"></div> 
+
+        <!-- UI ຫຼອດເລືອດ ແລະ ຄະແນນ -->
+        <div id="ui">
+            <div id="score-board">🪙 Coins: <span id="score">0</span> | ⏱️ Time: <span id="timer">120</span>s</div>
+            <div id="ghost-status" style="color: #e74c3c; font-size: 16px; margin-top: 2px;">👻 Ghost HP: <span id="ghost-hp">100</span>/100</div>
+            <div id="hp-container" style="display: flex; align-items: center; width: auto; background: transparent; border: none;">
+                <div style="width: 160px; height: 16px; background-color: rgba(0, 0, 0, 0.6); border: 2px solid #fff; border-radius: 10px; overflow: hidden;">
+                    <div id="hp-bar"></div>
+                </div>
+                <div id="hearts-display" style="font-size: 22px; margin-left: 12px; text-shadow: 2px 2px 4px #000;">❤️❤️❤️</div>
+            </div>
+        </div>
+        <!-- ສາກຫີນອຸປະສັກ ແລະ ຫຼຽນ-->
+        <div id="platforms"></div>
+        <div id="hazards"></div>
+        <div id="coins"></div>
+        <div id="bullets"></div>
+        <!-- ตัวละครเดิม -->
+        <div id="ghost"></div>
+        <div id="player"></div>
+        
+        <!-- ປຸ່ມຄວບຄຸມ -->
+        <div id="controls">
+            <div id="direction">
+                <button id="up">⬆️</button>
+                <button id="down">⬇️</button>
+                <button id="left">⬅️</button>
+                <button id="right">➡️</button>
+                <button id="jump">💨</button>
+                <button id="fire">🔫</button>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
