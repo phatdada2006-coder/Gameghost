@@ -57,7 +57,7 @@ function showFloatingText(x, y, text, color = '#f1c40f') {
     el.style.zIndex = '999';
     el.style.transition = 'all 0.8s ease-out';
     el.style.pointerEvents = 'none';
-    document.body.appendChild(el);
+    game.appendChild(el);
 
     setTimeout(() => {
         el.style.top = (y - 35) + 'px';
@@ -77,18 +77,57 @@ const coinsContainer = document.getElementById('coins');
 const shieldsContainer = document.createElement('div'); 
 const ghostHpText = document.getElementById('ghost-hp');
 const bulletsContainer = document.getElementById('bullets');
+const game = document.getElementById('game');
+
+function getGameSize() {
+    return {
+        width: game.clientWidth,
+        height: game.clientHeight
+    };
+}
+
+function updatePlayerBounds() {
+    const gameSize = getGameSize();
+    maxX = Math.max(0, gameSize.width - player.offsetWidth);
+    maxY = Math.max(0, gameSize.height - player.offsetHeight);
+}
+
+function randomGamePosition() {
+    const gameSize = getGameSize();
+    return {
+        x: Math.random() * Math.max(1, gameSize.width - 100) + 50,
+        y: Math.random() * Math.max(1, gameSize.height - 150) + 50
+    };
+}
+
+function repositionItems() {
+    coins.forEach(c => {
+        if (!c.collected) Object.assign(c, randomGamePosition());
+    });
+    shields.forEach(s => {
+        if (!s.collected) Object.assign(s, randomGamePosition());
+    });
+    speeds.forEach(sp => {
+        if (!sp.collected) Object.assign(sp, randomGamePosition());
+    });
+}
 
 let ghostHp = 100;
 let isGhostDead = false;
 let bullets = [];
 shieldsContainer.id = 'shields';
-document.body.appendChild(shieldsContainer);
+game.appendChild(shieldsContainer);
 
-let maxX = window.innerWidth - 50; 
-let maxY = window.innerHeight - 50;
+let maxX = 0;
+let maxY = 0;
 
-let playerX = window.innerWidth / 2;
-let playerY = window.innerHeight / 2;
+let playerX = 0;
+let playerY = 0;
+
+updatePlayerBounds();
+const initialGameSize = getGameSize();
+playerX = initialGameSize.width / 2;
+playerY = initialGameSize.height / 2;
 let playerSpeed = 4;
 let playerAngle = 0; 
 
@@ -163,20 +202,22 @@ window.addEventListener('keydown', (e) => {
 // ກົດປຸ່ມຍິງເທິງຫໜ້າຈໍມືຖື
 const fireBtn = document.getElementById('fire');
 if (fireBtn) {
-    fireBtn.addEventListener('click', shoot);
-    fireBtn.addEventListener('touchstart', (e) => { e.preventDefault(); shoot(); });
+    fireBtn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        shoot();
+    });
 }
 const jumpBtn = document.getElementById('jump');
-if(jumpBtn) {
-    jumpBtn.addEventListener('mousedown', startJump);
-    jumpBtn.addEventListener('touchstart', startJump);
+if (jumpBtn) {
+    jumpBtn.addEventListener('pointerdown', startJump);
 }
 window.addEventListener('keydown', (e) => { if (e.code === 'Space') startJump(e); });
 
 // ສ້າງສາກ ແລະ ຫຼຽນ 15 ອັນ
 function generateLayout(level = 1) {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const gameSize = getGameSize();
+    const w = gameSize.width;
+    const h = gameSize.height;
 
     if (level === 1) {
         platforms = [
@@ -212,29 +253,20 @@ let platforms = [];
 let hazards = [];
 let coins = [];
 for (let i = 0; i < 15; i++) {
-    coins.push({
-        x: Math.random() * (window.innerWidth - 100) + 50,
-        y: Math.random() * (window.innerHeight - 150) + 50,
-        collected: false
-    });
+    const pos = randomGamePosition();
+    coins.push({ ...pos, collected: false });
 }
 
 // 🛡️ ສ້າງໄອເທັມໂລ່ປ້ອງກັນ3ອັນ
 for (let i = 0; i < 3; i++) {
-    shields.push({
-        x: Math.random() * (window.innerWidth - 100) + 50,
-        y: Math.random() * (window.innerHeight - 150) + 50,
-        collected: false
-    });
+    const pos = randomGamePosition();
+    shields.push({ ...pos, collected: false });
 }
 
 // ⚡ສ້າງໄອເທັມຄວາມໄວ3ອັນ
 for (let i = 0; i < 3; i++) {
-    speeds.push({
-        x: Math.random() * (window.innerWidth - 100) + 50,
-        y: Math.random() * (window.innerHeight - 150) + 50,
-        collected: false
-    });
+    const pos = randomGamePosition();
+    speeds.push({ ...pos, collected: false });
 }
 function initShields() {
     shieldsContainer.innerHTML = '';
@@ -265,7 +297,7 @@ function initShields() {
 
 const speedsContainer = document.createElement('div');
 speedsContainer.id = 'speeds';
-document.body.appendChild(speedsContainer);
+game.appendChild(speedsContainer);
 
 function initSpeeds() {
     speedsContainer.innerHTML = '';
@@ -375,25 +407,16 @@ actionBtn.addEventListener('click', () => {
         gameStarted = true;
         menuScreen.style.display = 'none';
 
-        maxX = window.innerWidth - 50;
-        maxY = window.innerHeight - 50;
-        playerX = window.innerWidth / 2;
-        playerY = window.innerHeight / 2;
+        updatePlayerBounds();
+        const gameSize = getGameSize();
+        playerX = gameSize.width / 2;
+        playerY = gameSize.height / 2;
 
         generateLayout(1);
 
-        coins.forEach(c => {
-            c.x = Math.random() * (window.innerWidth - 100) + 50;
-            c.y = Math.random() * (window.innerHeight - 150) + 50;
-        });
-        shields.forEach(s => {
-            s.x = Math.random() * (window.innerWidth - 100) + 50;
-            s.y = Math.random() * (window.innerHeight - 150) + 50;
-        });
-        speeds.forEach(sp => {
-            sp.x = Math.random() * (window.innerWidth - 100) + 50;
-            sp.y = Math.random() * (window.innerHeight - 150) + 50;
-        });
+        coins.forEach(c => { c.collected = false; Object.assign(c, randomGamePosition()); });
+        shields.forEach(s => { s.collected = false; Object.assign(s, randomGamePosition()); });
+        speeds.forEach(sp => { sp.collected = false; Object.assign(sp, randomGamePosition()); });
 
         initMap();
         startTimer();
@@ -421,17 +444,35 @@ window.addEventListener('keyup', (e) => {
 
 function setupBtn(id, key) {
     const btn = document.getElementById(id);
-    if(!btn) return;
-    btn.addEventListener('mousedown', (e) => { e.preventDefault(); keys[key] = true; });
-    btn.addEventListener('mouseup', (e) => { e.preventDefault(); keys[key] = false; });
-    btn.addEventListener('touchstart', (e) => { e.preventDefault(); keys[key] = true; });
-    btn.addEventListener('touchend', (e) => { e.preventDefault(); keys[key] = false; });
+    if (!btn) return;
+
+    btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        keys[key] = true;
+        if (btn.setPointerCapture) btn.setPointerCapture(e.pointerId);
+    });
+
+    btn.addEventListener('pointerup', (e) => {
+        e.preventDefault();
+        keys[key] = false;
+    });
+
+    btn.addEventListener('pointercancel', () => {
+        keys[key] = false;
+    });
+
+    btn.addEventListener('lostpointercapture', () => {
+        keys[key] = false;
+    });
 }
 setupBtn('up', 'up'); setupBtn('down', 'down');
 setupBtn('left', 'left'); setupBtn('right', 'right');
 
 // ຟັງຊັ່ນການກວດການຕຳPlatform (Collision Detection)
-function checkPlatformCollision(newX, newY, width = 45, height = 45) {
+function checkPlatformCollision(newX, newY) {
+    const width = player.offsetWidth;
+    const height = player.offsetHeight;
+
     return platforms.some(p => {
         return newX < p.x + p.w &&
                newX + width > p.x &&
@@ -440,11 +481,31 @@ function checkPlatformCollision(newX, newY, width = 45, height = 45) {
     });
 }
 
+// ປັບຂະໜາດເກມເມື່ອຈໍມືຖືຫຼືໜ້າຕ່າງ PC ປ່ຽນຂະໜາດ
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        updatePlayerBounds();
+
+        if (playerX > maxX) playerX = maxX;
+        if (playerY > maxY) playerY = maxY;
+
+        if (gameStarted && !gameOver && !winGame) {
+            generateLayout(currentLevel);
+            repositionItems();
+            initMap();
+        }
+
+        player.style.left = playerX + 'px';
+        player.style.top = playerY + 'px';
+    }, 100);
+});
+
 // ພັງຊັ່ນລູບເກມ
 function gameLoop() {
     if (!gameStarted || gameOver || winGame) return;
-    maxX = window.innerWidth - 50;
-    maxY = window.innerHeight - 50;
+    updatePlayerBounds();
     if (isJumping) {
         jumpFrame++;
         let progress = jumpFrame / totalJumpFrames;
@@ -592,38 +653,30 @@ if (!checkPlatformCollision(playerX, nextY)) playerY = nextY;
                         updateLivesDisplay(); 
 
                         ghostSpeed = 2.8; 
-                        ghostX = window.innerWidth - 100; 
-                        ghostY = window.innerHeight - 100; 
+                        const gameSize = getGameSize();
+                        ghostX = gameSize.width - 100;
+                        ghostY = gameSize.height - 100; 
 
-                        hazards.push({ x: window.innerWidth / 3, y: window.innerHeight / 3 });
-                        hazards.push({ x: window.innerWidth - 200, y: window.innerHeight - 250 });
+                        hazards.push({ x: gameSize.width / 3, y: gameSize.height / 3 });
+                        hazards.push({ x: gameSize.width - 200, y: gameSize.height - 250 });
                         
                         coins = [];
                         for (let i = 0; i < 15; i++) {
-                            coins.push({
-                                x: Math.random() * (window.innerWidth - 100) + 50,
-                                y: Math.random() * (window.innerHeight - 150) + 50,
-                                collected: false
-                            });
+                            const pos = randomGamePosition();
+                            coins.push({ ...pos, collected: false });
                         }
 
                         // 🛡️ ເກີດໂລ່ໃໝ່ໃນດ່ານ2
                         shields = [];
                         for (let i = 0; i < 3; i++) {
-                            shields.push({
-                                x: Math.random() * (window.innerWidth - 100) + 50,
-                                y: Math.random() * (window.innerHeight - 150) + 50,
-                                collected: false
-                            });
+                            const pos = randomGamePosition();
+                            shields.push({ ...pos, collected: false });
                         }
-                        // ⚡  item speed 2
+                        // ⚡ item speed 2
                         speeds = [];
                         for (let i = 0; i < 3; i++) {
-                            speeds.push({
-                                x: Math.random() * (window.innerWidth - 100) + 50,
-                                y: Math.random() * (window.innerHeight - 150) + 50,
-                                collected: false
-                            });
+                            const pos = randomGamePosition();
+                            speeds.push({ ...pos, collected: false });
                         }
                         generateLayout(2);
                         gameStarted = true;
@@ -659,8 +712,9 @@ if (!checkPlatformCollision(playerX, nextY)) playerY = nextY;
                 
                 if (lives > 0) {
                     playerHp = 100;   
-                    playerX = window.innerWidth / 2; 
-                    playerY = window.innerHeight / 2;
+                    const gameSize = getGameSize();
+                    playerX = gameSize.width / 2;
+                    playerY = gameSize.height / 2;
                     ghostX = 20; 
                     ghostY = 20;     
                 } else {
@@ -708,8 +762,9 @@ if (!checkPlatformCollision(playerX, nextY)) playerY = nextY;
             continue;
         }
 
-        // กระสุนหลุดนอกจอ
-        if (b.x < 0 || b.x > window.innerWidth || b.y < 0 || b.y > window.innerHeight) {
+        
+        const gameSize = getGameSize();
+        if (b.x < 0 || b.x > gameSize.width || b.y < 0 || b.y > gameSize.height) {
             bullets.splice(i, 1);
             continue;
         }

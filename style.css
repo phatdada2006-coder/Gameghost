@@ -7,7 +7,7 @@
 html, body {
     width: 100vw;
     height: 100vh;
-    height: 100dvh; /* ปรับขนาดตามหน้าจอมือถือจริง */
+    height: 100dvh; 
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -141,6 +141,10 @@ html, body {
     font-size: 30px;
     margin: 2px;
     border-radius: 12px;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
     border: 2px solid #555;
     background: rgba(30, 30, 30, 0.8);
     color: white;
@@ -156,9 +160,20 @@ html, body {
     background: rgba(80, 80, 80, 0.9);
 }
 /* ປຸ່ມຍິງປືນ */
+#controls button {
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
 #fire {
     margin-left: 10px;
     background: rgba(231, 76, 60, 0.8) !important;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
 }
 
 #fire:active {
@@ -176,6 +191,48 @@ html, body {
     z-index: 6;
     box-shadow: 0 0 8px #f39c12;
 }
+#shields,
+#speeds {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    pointer-events: none;
+}
+
+#shields .shield-item,
+#speeds .speed-item {
+    pointer-events: none;
+}
+
+@media screen and (orientation: landscape) and (max-width: 900px) {
+    #controls {
+        bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    #direction button {
+        width: 58px;
+        height: 54px;
+        font-size: 26px;
+    }
+
+    #jump {
+        margin-left: 10px;
+    }
+
+    #fire {
+        margin-left: 6px;
+    }
+
+    #ui {
+        top: max(10px, env(safe-area-inset-top));
+        left: max(10px, env(safe-area-inset-left));
+        transform: scale(0.9);
+        transform-origin: top left;
+    }
+}
+
 @media screen and (orientation: portrait) {
     body::before {
         content: "📱 ກະລຸນາອຽງໂທລະສັບເປັນແນວນອນເພື່ອເລີ່ມຫຼິ້ນ";
